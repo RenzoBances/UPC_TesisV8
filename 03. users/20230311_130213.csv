@@ -1,0 +1,7 @@
+id_exercise,DateTime_Start,n_poses,n_sets,n_reps,total_poses,seconds_rest_time,Class,Prob,count_pose_g,count_pose,count_rep,count_set,right_elbow_angles_pu,right_hit_angles_pu,right_knee_angles_pu,right_shoulder_angles_cu,right_hit_angles_cu,right_knee_angles_cu,right_shoulder_angles_fp,right_hit_angles_fp,right_ankle_angles_fp,right_hit_angles_fl,right_knee_angles_fl,left_knee_angles_fl,right_shoulder_angles_bd,right_hit_angles_bd,right_knee_angles_bd,left_knee_angles_bd,right_elbow_angles_bd,left_elbow_angles_bd
+push_up,2023-03-11 13:01:13.096,3,2,1,6,5,push_up,29.0,1,1,0,0,158,175,178,,,,,,,,,,,,,,,
+push_up,2023-03-11 13:01:55.409,3,2,1,6,5,push_up,44.0,2,2,0,0,76,175,178,,,,,,,,,,,,,,,
+push_up,2023-03-11 13:02:00.310,3,2,1,6,5,push_up,31.0,3,3,1,0,155,175,177,,,,,,,,,,,,,,,
+push_up,2023-03-11 13:02:05.652,3,2,1,6,5,push_up,42.0,4,1,0,1,168,173,179,,,,,,,,,,,,,,,
+push_up,2023-03-11 13:02:06.379,3,2,1,6,5,push_up,28.0,5,2,0,1,64,174,179,,,,,,,,,,,,,,,
+push_up,2023-03-11 13:02:08.334,3,2,1,6,5,push_up,27.0,6,3,1,1,164,178,176,,,,,,,,,,,,,,,

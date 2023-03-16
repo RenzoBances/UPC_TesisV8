@@ -1,0 +1,11 @@
+id_exercise,DateTime_Start,n_poses,n_sets,n_reps,total_poses,seconds_rest_time,Class,Prob,count_pose_g,count_pose,count_rep,count_set,right_elbow_angles_pu,right_hit_angles_pu,right_knee_angles_pu,right_shoulder_angles_cu,right_hit_angles_cu,right_knee_angles_cu,right_shoulder_angles_fp,right_hit_angles_fp,right_ankle_angles_fp,right_hit_angles_fl,right_knee_angles_fl,left_knee_angles_fl,right_shoulder_angles_bd,right_hit_angles_bd,right_knee_angles_bd,left_knee_angles_bd,right_elbow_angles_bd,left_elbow_angles_bd
+bird_dog,2023-03-12 16:28:47.540,5,2,1,10,5,bird_dog,31.0,1,1,0,0,,,,,,,,,,,,,60,78,91,116,153,123
+bird_dog,2023-03-12 16:28:57.856,5,2,1,10,5,bird_dog,38.0,2,2,0,0,,,,,,,,,,,,,128,169,159,172,150,167
+bird_dog,2023-03-12 16:28:59.845,5,2,1,10,5,bird_dog,39.0,3,3,0,0,,,,,,,,,,,,,68,119,87,66,162,169
+bird_dog,2023-03-12 16:29:04.210,5,2,1,10,5,bird_dog,33.0,4,4,0,0,,,,,,,,,,,,,86,168,154,75,178,156
+bird_dog,2023-03-12 16:29:05.781,5,2,1,10,5,bird_dog,31.0,5,5,1,0,,,,,,,,,,,,,74,124,91,63,159,156
+bird_dog,2023-03-12 16:29:12.556,5,2,1,10,5,bird_dog,35.0,6,1,0,1,,,,,,,,,,,,,65,125,93,82,164,160
+bird_dog,2023-03-12 16:29:22.477,5,2,1,10,5,bird_dog,37.0,7,2,0,1,,,,,,,,,,,,,88,137,110,157,139,167
+bird_dog,2023-03-12 16:29:24.390,5,2,1,10,5,bird_dog,38.0,8,3,0,1,,,,,,,,,,,,,65,118,85,83,158,166
+bird_dog,2023-03-12 16:29:27.422,5,2,1,10,5,bird_dog,37.0,9,4,0,1,,,,,,,,,,,,,78,173,157,94,176,162
+bird_dog,2023-03-12 16:29:29.128,5,2,1,10,5,bird_dog,42.0,10,5,1,1,,,,,,,,,,,,,66,101,70,66,158,166
