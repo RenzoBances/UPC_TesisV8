@@ -83,6 +83,15 @@ def load_home():
         unsafe_allow_html=True)
     st.image("01. webapp_img/pose_landmarks_model.png", width=600)
 
+def load_reportes():
+
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("**POSE_LANDMARKS**<br>Una lista de puntos de referencia de la pose. Cada punto de referencia consta de lo siguiente:<br><ul><li><b>X & Y:</b> coordenadas de referencia normalizadas a [0.0, 1.0] por el ancho y la altura de la imagen, respectivamente.</li><li><b>Z:</b> Representa la profundidad del punto de referencia con la profundidad en el punto medio de las caderas como origen, y cuanto menor sea el valor, más cerca estará el punto de referencia de la cámara. La magnitud de z usa aproximadamente la misma escala que x.</li><li><b>Visibilidad:</b> un valor en [0.0, 1.0] que indica la probabilidad de que el punto de referencia sea visible (presente y no ocluido) en la imagen.</li></ul><br>",
+        unsafe_allow_html=True)
+    st.markdown("**MODELO DE PUNTOS DE REFERENCIA DE POSE (BlazePose GHUM 3D)**<br>El modelo de puntos de referencia en MediaPipe Pose predice la ubicación de 33 puntos de referencia de pose (consulte la figura a continuación).<br>",
+        unsafe_allow_html=True)
+    st.image("01. webapp_img/pose_landmarks_model.png", width=600)
+
 def print_sidebar_main(id_exercise):
         load_exercise_metadata(id_exercise)
 
@@ -431,25 +440,29 @@ if authentication_status:
 
       # ---- SIDEBAR ----
     authenticator.logout("Logout", "sidebar")
-    st.sidebar.title(f"Welcome {name}")
+    st.sidebar.title(f"Bienvenido {name}")
 
-    app_mode = st.sidebar.selectbox('Choose your training:',
-        #['HOME','Squats', 'Push Up', 'Curl Up', 'Front Plank', 'Forward Lunge', 'Bird Dog']
-        ['HOME','Push Up', 'Curl Up', 'Front Plank', 'Forward Lunge', 'Bird Dog']
+    app_exercise = st.sidebar.selectbox('Seleccione su opcion:',
+        ['INICIO','EJERCICIOS', 'REPORTES']
     )
+
+    if app_exercise == "EJERCICIOS":
+        app_mode = st.sidebar.selectbox('Seleccione su Ejerccicio:',
+            ['Push Up', 'Curl Up', 'Front Plank', 'Forward Lunge', 'Bird Dog']
+        )
 
     id_trainer = randrange(3) + 1
 
     exercise_to_do = {}
 
-    if app_mode =='HOME':
+    if app_exercise =='INICIO':
         load_home()
-
+    elif app_exercise =='REPORTES':
+        load_reportes()
     else:
-        if app_mode =='Squats':
-            id_exercise = 'squats'
-
-        elif app_mode =='Push Up':
+        # if app_mode =='Squats':
+        #     id_exercise = 'squats'
+        if app_mode =='Push Up':
             id_exercise = 'push_up'
 
         elif app_mode =='Curl Up':
@@ -559,7 +572,7 @@ if authentication_status:
                     N = 5
                     placeholder_trainer.image("./01. webapp_img/warm_up.gif")
                     stframe.image("./01. webapp_img/warm_up.gif")
-                    mstart = "Listo para Comenzar"
+                    mstart = "Por favor asegurese que su dispositivo pueda ver su cuerpo completo en su pantalla"
                     speak(mstart)
                     for secs in range(N,0,-1):
                         ss = secs%60
@@ -1272,40 +1285,7 @@ if authentication_status:
                                                 stage = "up"
                                                 start +=1
                                                 flagTime = True
-                                                df_results = add_row_df_results(df_results,
-                                                                                id_exercise,                        #1 - str - id_exercise
-                                                                                get_timestap_log(),                 #2 - str - DateTime_Start
-                                                                                st.session_state.n_poses,           #3 - int - n_poses
-                                                                                st.session_state.n_sets,            #4 - int - n_sets
-                                                                                st.session_state.n_reps,            #5 - int - n_reps
-                                                                                st.session_state.total_poses,       #6 - int - total_poses
-                                                                                st.session_state.seconds_rest_time, #7 - int - seconds_rest_time
-                                                                                body_language_class,                #8 - str - Class
-                                                                                body_language_prob_p,               #9 - float - Prob
-                                                                                st.session_state.count_pose_g,      #10 - int - count_pose_g
-                                                                                st.session_state.count_pose,        #11 - int - count_pose
-                                                                                st.session_state.count_rep + 1,         #12 - int - count_rep
-                                                                                st.session_state.count_set + 1,         #13 - int - count_set
-                                                                                None,   #14 - float - right_elbow_angles_pu
-                                                                                None,   #15 - float - right_hit_angles_pu
-                                                                                None,   #16 - float - right_knee_angles_pu
-                                                                                None,   #17 - float - right_shoulder_angles_cu
-                                                                                None,   #18 - float - right_hit_angles_cu
-                                                                                None,   #19 - float - right_knee_angles_cu
-                                                                                right_shoulder_angle,               #20 - float - right_shoulder_angles_fp
-                                                                                right_hit_angle,                    #21 - float - right_hit_angles_fp
-                                                                                right_ankle_angle,                  #22 - float - right_ankle_angles_fp
-                                                                                None,    #23 - float - right_hit_angles_fl
-                                                                                None,    #24 - float - right_knee_angles_fl
-                                                                                None,    #25 - float - left_knee_angles_fl
-                                                                                None,    #26 - float - right_shoulder_angles_bd
-                                                                                None,    #27 - float - right_hit_angles_bd
-                                                                                None,    #28 - float - right_knee_angles_bd
-                                                                                None,    #29 - float - left_knee_angles_bd
-                                                                                None,    #30 - float - right_elbow_angles_bd
-                                                                                None,    #31 - float - left_elbow_angles_bd
-                                                )
-                                                ######################################s######
+                                                
                                             elif up == True and\
                                                 down == True and\
                                                 right_shoulder_angle in range(int(right_shoulder_angle_in - desv_right_shoulder_angle_in) , int(right_shoulder_angle_in + desv_right_shoulder_angle_in + 1)) and\
@@ -2047,13 +2027,49 @@ if authentication_status:
                                             cv2.circle(image, (right_ankle_x3, right_ankle_y3), 6, (128, 0, 255),-1)
                                             cv2.putText(image, str(int(right_ankle_angle)), (right_ankle_x2 + 30, right_ankle_y2), 1, 1.5, (128, 0, 250), 2)
                                             if start == 2 and flagTime == True:
-                                                mfrontplank = "Espere " + str(st.session_state.seconds_rest_time) + " segundos"
-                                                speak(mfrontplank)
+                                                mifrontplank = "Mantenga la posicion" + str(st.session_state.seconds_rest_time) + " segundos"
+                                                speak(mifrontplank)
                                                 cv2.putText(image, 'WAIT FOR ' + str(st.session_state.seconds_rest_time) + ' s' , (155,350), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,0,0), 3, cv2.LINE_AA)
                                                 stframe.image(image,channels = 'BGR',use_column_width=True)
                                                 time.sleep(int(st.session_state.seconds_rest_time))
+                                                mffrontplank = "Baje!"
+                                                speak(mffrontplank)
                                                 #############################################
                                                 update_dashboard()
+                                                ######################################s######
+                                                df_results = add_row_df_results(df_results,
+                                                                                id_exercise,                        #1 - str - id_exercise
+                                                                                get_timestap_log(),                 #2 - str - DateTime_Start
+                                                                                st.session_state.n_poses,           #3 - int - n_poses
+                                                                                st.session_state.n_sets,            #4 - int - n_sets
+                                                                                st.session_state.n_reps,            #5 - int - n_reps
+                                                                                st.session_state.total_poses,       #6 - int - total_poses
+                                                                                st.session_state.seconds_rest_time, #7 - int - seconds_rest_time
+                                                                                body_language_class,                #8 - str - Class
+                                                                                body_language_prob_p,               #9 - float - Prob
+                                                                                st.session_state.count_pose_g,      #10 - int - count_pose_g
+                                                                                st.session_state.count_pose,        #11 - int - count_pose
+                                                                                st.session_state.count_rep + 1,         #12 - int - count_rep
+                                                                                st.session_state.count_set + 1,         #13 - int - count_set
+                                                                                None,   #14 - float - right_elbow_angles_pu
+                                                                                None,   #15 - float - right_hit_angles_pu
+                                                                                None,   #16 - float - right_knee_angles_pu
+                                                                                None,   #17 - float - right_shoulder_angles_cu
+                                                                                None,   #18 - float - right_hit_angles_cu
+                                                                                None,   #19 - float - right_knee_angles_cu
+                                                                                right_shoulder_angle,               #20 - float - right_shoulder_angles_fp
+                                                                                right_hit_angle,                    #21 - float - right_hit_angles_fp
+                                                                                right_ankle_angle,                  #22 - float - right_ankle_angles_fp
+                                                                                None,    #23 - float - right_hit_angles_fl
+                                                                                None,    #24 - float - right_knee_angles_fl
+                                                                                None,    #25 - float - left_knee_angles_fl
+                                                                                None,    #26 - float - right_shoulder_angles_bd
+                                                                                None,    #27 - float - right_hit_angles_bd
+                                                                                None,    #28 - float - right_knee_angles_bd
+                                                                                None,    #29 - float - left_knee_angles_bd
+                                                                                None,    #30 - float - right_elbow_angles_bd
+                                                                                None,    #31 - float - left_elbow_angles_bd
+                                                )
                                                 ######################################s######
                                                 cv2.putText(image, '' , (155,350), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,0,0), 3, cv2.LINE_AA)
                                                 stframe.image(image,channels = 'BGR',use_column_width=True)
@@ -2143,6 +2159,8 @@ if authentication_status:
                                         cv2.putText(image, 'REST FOR ' + str(st.session_state.seconds_rest_time) + ' s' , (155,350), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,0,0), 3, cv2.LINE_AA)
                                         stframe.image(image,channels = 'BGR',use_column_width=True)
                                         # cv2.waitKey(1)
+                                        msucessset = "Felicitaciones, vas por buen camino"
+                                        speak(msucessset)
                                         time.sleep(int(st.session_state.seconds_rest_time))
                                     except:
                                         stframe.image(image,channels = 'BGR',use_column_width=True)
