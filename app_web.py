@@ -10,16 +10,41 @@ from random import randrange
 import pandas as pd
 import pickle
 from math import acos, degrees
-
+import dashboard as ds
+import os
 import pyttsx3  
 from pathlib import Path
 import streamlit_authenticator as stauth  # pip install streamlit-authenticator
 import database as db
+import utilitarios as ut
 
 #1.2. OWN LIBRARIES
 ###################
 import Libraries.Exercises.UpcSystemCost as UpcSystemCost
 
+#1.3. GLOBAL VARIABLES
+desv_right_elbow_angle_in_pu = 10#get_desv_angle(df_trainers_angles, start, 'right_shoulder_angles')
+desv_right_hit_angle_in_pu=10#get_desv_angle(df_trainers_angles, start, 'right_hit_angles')
+desv_right_knee_angle_in_pu=10#get_desv_angle(df_trainers_angles, start, 'right_knee_angles')
+
+desv_right_shoulder_angle_in_bd=25#get_desv_angle(df_trainers_angles, start, 'left_knee_angles')
+desv_right_hit_angle_in_bd=25#get_desv_angle(df_trainers_angles, start, 'right_elbow_angles')
+desv_right_knee_angle_in_bd=25#get_desv_angle(df_trainers_angles, start, 'left_elbow_angles')
+desv_left_knee_angle_in_bd=25
+desv_right_elbow_angle_in_bd=25
+desv_left_elbow_angle_in_bd = 25
+
+desv_right_hit_angle_in_fl=25
+desv_right_knee_angle_in_fl=25 
+desv_left_knee_angle_in_fl=25
+
+desv_right_shoulder_angle_in_fp=15 
+desv_right_hit_angle_in_fp=15
+desv_right_ankle_angle_in_fp=15
+
+desv_right_shoulder_angle_in_cu=15
+desv_right_hit_angle_in_cu=15
+desv_right_knee_angle_in_cu=15 
 
 # 2. FUNCTIONS
 ##############
@@ -84,15 +109,77 @@ def load_home():
     st.image("01. webapp_img/pose_landmarks_model.png", width=600)
 
 def load_reportes():
+    # Streamlit tabs
+    tab1, tab2= st.tabs(["A. Today's training", "B. Your whole training"])
+    dir_user = os.getcwd() + "\\03. users\\"
+    b_today_training = ds.get_files_by_day(username, ds.get_datestamp_txt(), dir_user)
+    c_whole_training = ds.get_files_by_dir(username, dir_user)
 
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown("**POSE_LANDMARKS**<br>Una lista de puntos de referencia de la pose. Cada punto de referencia consta de lo siguiente:<br><ul><li><b>X & Y:</b> coordenadas de referencia normalizadas a [0.0, 1.0] por el ancho y la altura de la imagen, respectivamente.</li><li><b>Z:</b> Representa la profundidad del punto de referencia con la profundidad en el punto medio de las caderas como origen, y cuanto menor sea el valor, más cerca estará el punto de referencia de la cámara. La magnitud de z usa aproximadamente la misma escala que x.</li><li><b>Visibilidad:</b> un valor en [0.0, 1.0] que indica la probabilidad de que el punto de referencia sea visible (presente y no ocluido) en la imagen.</li></ul><br>",
-        unsafe_allow_html=True)
-    st.markdown("**MODELO DE PUNTOS DE REFERENCIA DE POSE (BlazePose GHUM 3D)**<br>El modelo de puntos de referencia en MediaPipe Pose predice la ubicación de 33 puntos de referencia de pose (consulte la figura a continuación).<br>",
-        unsafe_allow_html=True)
-    st.image("01. webapp_img/pose_landmarks_model.png", width=600)
+    # Today's training
+    with tab1:
+        image_message, aprox_indicator = st.columns(2)
+
+        if len(b_today_training) > 0:
+            with image_message:
+                #st.title("Precisión del entrenamiento (%)")
+                image1 = "https://i.pinimg.com/originals/d3/4c/04/d34c0453fc7a77c00b3ab2451b65d592.png"
+                st.image(image1, width = 360)
+
+            with aprox_indicator:
+                df_today_training = ds.get_df_by_whole_training_data(b_today_training)
+                df_aprox_exercise_by_date = ds.get_data_grouped_by_date(df_today_training)
+                df_aprox_exercise_by_date = get_df_aprox_exercise_by_date(df_today_training, df_aprox_exercise_by_date)
+                fig_aprox = ds.plot_barchar_by_date(df_aprox_exercise_by_date, "Fecha", "Aproximacion", "id_exercise", "Aproximacion", "Fecha", "Aproximación (%)", "Aproximación de ejercicios realizados por día")
+                st.plotly_chart(fig_aprox)
+
+            tr_time_indicator, cal_burned_indicator = st.columns(2)
+
+            with tr_time_indicator:
+                df_train_time_exercise_by_date = ds.get_data_grouped_by_date(df_today_training)
+                df_train_time_exercise_by_date = ds.get_df_train_time_exercise_by_date(df_today_training, df_train_time_exercise_by_date)
+                fig_tr_time = ds.plot_barchar_by_date(df_train_time_exercise_by_date, "Fecha", "Training_time", "id_exercise", "Training_time", "Fecha", "Tiempo de entrenamiento (min)", "Tiempo de entrenamiento de ejercicios realizados por día")
+                st.plotly_chart(fig_tr_time)  
+
+            with cal_burned_indicator:
+                df_calories_burned_by_date = ds.get_df_calories_burned_by_date(df_train_time_exercise_by_date)
+                fig_cal = ds.plot_barchar_by_date(df_calories_burned_by_date, "Fecha", "Calories_burned", "id_exercise", "Calories_burned", "Fecha", "Calorias quemadas", "Calorias quemadas por ejercicios realizados por día")
+                st.plotly_chart(fig_cal)
+        elif len(b_today_training) == 0:
+            with image_message:
+                st.title("No existe información de ejercicios ejecutados el día de hoy")
+    # Your whole training   
+    with tab2:
+        image_message1, aprox_indicator1 = st.columns(2)
+        if len(c_whole_training) > 0:
+            with image_message1:
+                #st.title("precisión del entrenamiento (%)")
+                image1 = "https://www.quotesforjoy.com/wp-content/uploads/2021/09/The-rock-quote-3.png"
+                st.image(image1, width = 360)
+            with aprox_indicator1:
+                df_whole_training = ds.get_df_by_whole_training_data(c_whole_training)
+                df_aprox_exercise_by_date = ds.get_data_grouped_by_date(df_whole_training)
+                df_aprox_exercise_by_date = get_df_aprox_exercise_by_date(df_whole_training, df_aprox_exercise_by_date)
+                fig_aprox = ds.plot_barchar_by_date(df_aprox_exercise_by_date, "Fecha", "Aproximacion", "id_exercise", "Aproximacion", "Fecha", "Aproximación (%)", "Aproximación de ejercicios realizados por día")
+                st.plotly_chart(fig_aprox)
+
+            tr_time_indicator1, cal_burned_indicator1 = st.columns(2)
+
+            with tr_time_indicator1:
+                df_train_time_exercise_by_date = ds.get_data_grouped_by_date(df_whole_training)
+                df_train_time_exercise_by_date = ds.get_df_train_time_exercise_by_date(df_whole_training, df_train_time_exercise_by_date)
+                fig_tr_time = ds.plot_barchar_by_date(df_train_time_exercise_by_date, "Fecha", "Training_time", "id_exercise", "Training_time", "Fecha", "Tiempo de entrenamiento (min)", "Tiempo de entrenamiento de ejercicios realizados por día")
+                st.plotly_chart(fig_tr_time)  
+
+            with cal_burned_indicator1:
+                df_calories_burned_by_date = ds.get_df_calories_burned_by_date(df_train_time_exercise_by_date)
+                fig_cal = ds.plot_barchar_by_date(df_calories_burned_by_date, "Fecha", "Calories_burned", "id_exercise", "Calories_burned", "Fecha", "Calorias quemadas", "Calorias quemadas por ejercicios realizados por día")
+                st.plotly_chart(fig_cal)
+        elif len(c_whole_training) == 0:
+            with image_message1:
+                st.title("No existe data histórica para el usuario")
 
 def print_sidebar_main(id_exercise):
+        
         load_exercise_metadata(id_exercise)
 
         #SIDEBAR START
@@ -168,143 +255,15 @@ def get_desv_angle(df, index, part):
     desv_in=desv_in.iloc[0]
     return desv_in
 
-def next_pose(actual_pose):
-    if actual_pose < st.session_state.n_poses:
-        next_pose_n = actual_pose + 1
-    else:
-        next_pose_n = 1   
-    return next_pose_n
-
 def get_timestap_log():
     now = time.time()
     mlsec = repr(now).split('.')[1][:3]
     timestamp1 = time.strftime("%Y-%m-%d %H:%M:%S.{}".format(mlsec))
     return timestamp1
 
-def get_timestap_txt():
-    timestamp2 = time.strftime("%Y%m%d_%H%M%S")
+def get_timestap_txt(id_user,id_exer):
+    timestamp2 = time.strftime("%Y%m%d_%H%M%S"+"_"+id_user+"_"+id_exer)
     return timestamp2
-
-def create_df_results():
-    df_results = pd.DataFrame({
-        'id_exercise'               : pd.Series(dtype='str'),   #1
-        'DateTime_Start'            : pd.Series(dtype='str'),   #2
-        'n_poses'                   : pd.Series(dtype='int'),   #3
-        'n_sets'                    : pd.Series(dtype='int'),   #4
-        'n_reps'                    : pd.Series(dtype='int'),   #5
-        'total_poses'               : pd.Series(dtype='int'),   #6
-        'seconds_rest_time'         : pd.Series(dtype='int'),   #7
-        'Class'                     : pd.Series(dtype='str'),   #8
-        'Prob'                      : pd.Series(dtype='float'), #9
-        'count_pose_g'              : pd.Series(dtype='int'),   #10
-        'count_pose'                : pd.Series(dtype='int'),   #11
-        'count_rep'                 : pd.Series(dtype='int'),   #12
-        'count_set'                 : pd.Series(dtype='int'),   #13
-        #push_up
-        'right_elbow_angles_pu'     : pd.Series(dtype='float'), #14
-        'right_hit_angles_pu'       : pd.Series(dtype='float'), #15
-        'right_knee_angles_pu'      : pd.Series(dtype='float'), #16
-        #curl_up
-        'right_shoulder_angles_cu'  : pd.Series(dtype='float'), #17
-        'right_hit_angles_cu'       : pd.Series(dtype='float'), #18
-        'right_knee_angles_cu'      : pd.Series(dtype='float'), #19
-        #front_plank
-        'right_shoulder_angles_fp'  : pd.Series(dtype='float'), #20
-        'right_hit_angles_fp'       : pd.Series(dtype='float'), #21
-        'right_ankle_angles_fp'     : pd.Series(dtype='float'), #22
-        #forward_lunge
-        'right_hit_angles_fl'       : pd.Series(dtype='float'), #23
-        'right_knee_angles_fl'      : pd.Series(dtype='float'), #24
-        'left_knee_angles_fl'       : pd.Series(dtype='float'), #25
-        #bird_dog
-        'right_shoulder_angles_bd'  : pd.Series(dtype='float'), #26
-        'right_hit_angles_bd'       : pd.Series(dtype='float'), #27
-        'right_knee_angles_bd'      : pd.Series(dtype='float'), #28
-        'left_knee_angles_bd'       : pd.Series(dtype='float'), #29
-        'right_elbow_angles_bd'     : pd.Series(dtype='float'), #30
-        'left_elbow_angles_bd'      : pd.Series(dtype='float'), #31
-        })
-    return df_results
-
-
-def add_row_df_results(df_results,
-                       id_exercise,             #1
-                       DateTime_Start,          #2
-                       n_poses,                 #3
-                       n_sets,                  #4
-                       n_reps,                  #5
-                       total_poses,             #6
-                       seconds_rest_time,       #7
-                       Class,                   #8
-                       Prob,                    #9
-                       count_pose_g,            #10
-                       count_pose,              #11
-                       count_rep,               #12
-                       count_set,               #13
-                       #push_up
-                       right_elbow_angles_pu,   #14
-                       right_hit_angles_pu,     #15
-                       right_knee_angles_pu,    #16
-                       #curl_up
-                       right_shoulder_angles_cu,#17
-                       right_hit_angles_cu,     #18
-                       right_knee_angles_cu,    #19
-                       #front_plank
-                       right_shoulder_angles_fp,#20
-                       right_hit_angles_fp,     #21
-                       right_ankle_angles_fp,   #22
-                       #forward_lunge 
-                       right_hit_angles_fl,     #23
-                       right_knee_angles_fl,    #24
-                       left_knee_angles_fl,     #25
-                       #bird_dog
-                       right_shoulder_angles_bd,#26
-                       right_hit_angles_bd,     #27
-                       right_knee_angles_bd,    #28
-                       left_knee_angles_bd,     #29
-                       right_elbow_angles_bd,   #30
-                       left_elbow_angles_bd,    #31
-                       ):
-    
-    df_results.loc[len(df_results.index)] = [
-        id_exercise,        #1 - str - id_exercise
-        DateTime_Start,     #2 - str - DateTime_Start
-        n_poses,            #3 - int - n_poses
-        n_sets,             #4 - int - n_sets
-        n_reps,             #5 - int - n_reps
-        total_poses,        #6 - int - total_poses
-        seconds_rest_time,  #7 - int - seconds_rest_time
-        Class,              #8 - str - Class
-        Prob,               #9 - float - Prob
-        count_pose_g,       #10 - int - count_pose_g
-        count_pose,         #11 - int - count_pose_
-        count_rep,          #12 - int - count_rep
-        count_set,          #13 - int - count_set
-        #push_up
-        right_elbow_angles_pu,   #14 - float
-        right_hit_angles_pu,     #15 - float
-        right_knee_angles_pu,    #16 - float
-        #curl_up
-        right_shoulder_angles_cu,#17 - float
-        right_hit_angles_cu,     #18 - float
-        right_knee_angles_cu,    #19 - float
-        #front_plank
-        right_shoulder_angles_fp,#20 - float
-        right_hit_angles_fp,     #21 - float
-        right_ankle_angles_fp,   #22 - float
-        #forward_lunge 
-        right_hit_angles_fl,     #23 - float
-        right_knee_angles_fl,    #24 - float
-        left_knee_angles_fl,     #25 - float
-        #bird_dog
-        right_shoulder_angles_bd,#26 - float
-        right_hit_angles_bd,     #27 - float
-        right_knee_angles_bd,    #28 - float
-        left_knee_angles_bd,     #29 - float
-        right_elbow_angles_bd,   #30 - float
-        left_elbow_angles_bd,    #31 - float
-        ]
-    return df_results
 
 def update_dashboard():
     
@@ -316,10 +275,6 @@ def update_dashboard():
             if st.session_state.count_pose < st.session_state.n_poses:
                 st.session_state.count_pose += 1
                 placeholder_pose.metric("POSE", str(st.session_state.count_pose) + " / "+ str(st.session_state.n_poses), "+1 pose")
-                # placeholder_next = st.empty()
-                # placeholder_next.image("./02. trainers/" + id_exercise + "/images/" + id_exercise + str(next_pose(st.session_state.count_pose)) + ".png")
-                # placeholder_trainer = st.empty()
-                # placeholder_trainer.image("./02. trainers/" + id_exercise + "/images/" + id_exercise + str(st.session_state.count_pose) + ".png")
         else:
             placeholder_status.markdown(font_size_px("🥇 FINISH !!!"), unsafe_allow_html=True)
             placeholder_trainer.image("./02. trainers/" + id_exercise + "/images/" + id_exercise + "1.png")
@@ -328,6 +283,54 @@ def update_dashboard():
             placeholder_rep.metric("REPETITION", str(st.session_state.count_rep) + " / "+ str(st.session_state.n_reps), "COMPLETED", delta_color="inverse")
             placeholder_set.metric("SET", str(st.session_state.count_set) + " / "+ str(st.session_state.n_sets), "COMPLETED", delta_color="inverse" )
 
+def get_df_aprox_exercise_by_date(df_whole_training, df_aprox_exercise_by_date):
+
+   aproxs_by_date = []
+
+
+   for i in range(0, len(df_aprox_exercise_by_date)):
+       
+      df_analisis = df_whole_training[(df_whole_training['id_exercise'] == df_aprox_exercise_by_date['id_exercise'][i]) & (df_whole_training['Fecha'] == df_aprox_exercise_by_date['Fecha'][i])]
+       
+      if df_aprox_exercise_by_date['id_exercise'][i] == 'push_up':
+       
+         aproxs_by_date.append(ds.get_aprox_exercise(["right_elbow_angles_pu", "right_hit_angles_pu", "right_knee_angles_pu"],
+                                                            [desv_right_elbow_angle_in_pu, desv_right_hit_angle_in_pu, desv_right_knee_angle_in_pu], 
+                                                            get_trainers_angles("push_up"), 
+                                                            df_analisis))
+           
+      elif df_aprox_exercise_by_date['id_exercise'][i] == 'bird_dog':
+
+         aproxs_by_date.append(ds.get_aprox_exercise(["right_shoulder_angles_bd" , "right_hit_angles_bd", "right_knee_angles_bd" , "left_knee_angles_bd", "right_elbow_angles_bd", "left_elbow_angles_bd"],
+                                                            [desv_right_shoulder_angle_in_bd, desv_right_hit_angle_in_bd, desv_right_knee_angle_in_bd,desv_left_knee_angle_in_bd,desv_right_elbow_angle_in_bd, desv_left_elbow_angle_in_bd], 
+                                                            get_trainers_angles('bird_dog'), 
+                                                            df_analisis))
+
+      elif df_aprox_exercise_by_date['id_exercise'][i] == 'forward_lunge':
+
+         aproxs_by_date.append(ds.get_aprox_exercise(["right_hit_angles_fl","right_knee_angles_fl", "left_knee_angles_fl"],
+                                                            [desv_right_hit_angle_in_fl, desv_right_knee_angle_in_fl, desv_left_knee_angle_in_fl], 
+                                                            get_trainers_angles("forward_lunge"), 
+                                                            df_analisis))
+
+      elif df_aprox_exercise_by_date['id_exercise'][i] == 'front_plank':
+
+         aproxs_by_date.append(ds.get_aprox_exercise(["right_shoulder_angles_fp", "right_hit_angles_fp", "right_ankle_angles_fp"],
+                                                            [desv_right_shoulder_angle_in_fp, desv_right_hit_angle_in_fp, desv_right_ankle_angle_in_fp], 
+                                                            get_trainers_angles("front_plank"), 
+                                                            df_analisis))
+
+      elif df_aprox_exercise_by_date['id_exercise'][i] == 'curl_up':
+
+         aproxs_by_date.append(ds.get_aprox_exercise(["right_shoulder_angles_cu", "right_hit_angles_cu", "right_knee_angles_cu"],
+                                                            [desv_right_shoulder_angle_in_cu, desv_right_hit_angle_in_cu, desv_right_knee_angle_in_cu], 
+                                                            get_trainers_angles("curl_up"), 
+                                                            df_analisis))
+
+
+   df_aprox_exercise_by_date['Aproximacion'] = aproxs_by_date
+
+   return df_aprox_exercise_by_date
 # 3. HTML CODE
 #############
 st.set_page_config(
@@ -416,7 +419,7 @@ st.markdown(
 
 
 # 4. PYTHON CODE
-#############
+#############load
 if authentication_status == False:
     st.error("Username/password is incorrect")
 
@@ -458,6 +461,7 @@ if authentication_status:
     if app_exercise =='INICIO':
         load_home()
     elif app_exercise =='REPORTES':
+
         load_reportes()
     else:
         # if app_mode =='Squats':
@@ -487,23 +491,18 @@ if authentication_status:
         st.session_state.count_pose   = 0
         st.session_state.count_rep    = 0
         st.session_state.count_set    = 0
-        #my_bar = st.progress(0)
+        finishexercise = False
 
         # total_poses = Sets x Reps x N° Poses
         st.session_state.total_poses = st.session_state.n_sets * st.session_state.n_reps * st.session_state.n_poses
-        exercise_control, exercise_next, exercise_number_set, exercise_number_rep, exercise_number_pose, exercise_number_pose_global, exercise_status  = st.columns(7)
+        exercise_control, exercise_number_set, exercise_number_rep, exercise_number_pose, exercise_number_pose_global, exercise_status  = st.columns(6)
             
         with exercise_control:
             placeholder_button_status = st.empty()
             placeholder_button_status.info('PRESS START BUTTON', icon="📹")
             st.markdown("<br>", unsafe_allow_html=True)
             webcam = st.button("START / STOP")
-        
-        with exercise_next:
-            st.text("NEXT POSE")
-            placeholder_next = st.empty()
-            placeholder_next.image("./02. trainers/" + id_exercise + "/images/" + id_exercise + str(next_pose(st.session_state.count_pose)) + ".png")
-
+    
         with exercise_number_set:
             placeholder_set = st.empty()
             placeholder_set.metric("SET", "0 / "+ str(st.session_state.n_sets), "+1 set")
@@ -584,7 +583,7 @@ if authentication_status:
                     ############################################################
                     ##               📘 RESULT DATAFRAME (INICIO)             ##
                     ############################################################
-                    df_results = create_df_results()
+                    df_results = ut.create_df_results()
                     
                     ############################################################
                     ##               📘 RESULT DATAFRAME (FIN)                ##
@@ -870,7 +869,7 @@ if authentication_status:
                                             desv_right_knee_angle_in=10 #get_desv_angle(df_trainers_angles, start, 'right_knee_angles')
                                             print(f'desv_right_knee_angle: {desv_right_knee_angle_in}')
 
-                                            #SUMAR Y RESTAR UN RANGO DE 30 PARA EL ANGULO DE CADA POSE PARA UTILIZARLO COMO RANGO 
+                                            #SUMAR Y RESTAR UN RANGO DE 10 PARA EL ANGULO DE CADA POSE PARA UTILIZARLO COMO RANGO 
                                             if  up == False and\
                                                 down == False and\
                                                 right_elbow_angle in range(int(right_elbow_angle_in-desv_right_elbow_angle_in), int(right_elbow_angle_in + desv_right_elbow_angle_in + 1)) and\
@@ -883,7 +882,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -921,7 +920,9 @@ if authentication_status:
                                                 print(f'right_hit_angle: {right_hit_angle}')
                                                 print(f'right_knee_angle: {right_knee_angle}')
                                                 print(f'Paso Primera Pose')
-                                            
+                                            # elif  up == True and down == False and start == 1 and int(right_elbow_angle) > 90:
+                                            #     feedback = "Baje los codos"
+                                            #     speak(feedback)
                                             elif up == True and\
                                                 down == False and\
                                                 right_elbow_angle in range(int(right_elbow_angle_in - desv_right_elbow_angle_in) , int(right_elbow_angle_in + desv_right_elbow_angle_in + 1)) and\
@@ -934,7 +935,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -991,7 +992,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1060,7 +1061,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1110,7 +1111,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1166,7 +1167,7 @@ if authentication_status:
                                                 ###########################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1236,7 +1237,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1304,7 +1305,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1373,7 +1374,7 @@ if authentication_status:
                                                 ###########################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1422,7 +1423,7 @@ if authentication_status:
                                                 ###########################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1476,7 +1477,7 @@ if authentication_status:
                                                 ###########################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1523,7 +1524,7 @@ if authentication_status:
                                                 ###########################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1580,7 +1581,7 @@ if authentication_status:
                                                 ###########################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1662,7 +1663,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1712,7 +1713,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1767,7 +1768,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1813,7 +1814,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -1871,7 +1872,7 @@ if authentication_status:
                                                 ############################################
                                                 update_dashboard()
                                                 speak(stage)
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -2037,7 +2038,7 @@ if authentication_status:
                                                 #############################################
                                                 update_dashboard()
                                                 ######################################s######
-                                                df_results = add_row_df_results(df_results,
+                                                df_results = ut.add_row_df_results(df_results,
                                                                                 id_exercise,                        #1 - str - id_exercise
                                                                                 get_timestap_log(),                 #2 - str - DateTime_Start
                                                                                 st.session_state.n_poses,           #3 - int - n_poses
@@ -2171,6 +2172,7 @@ if authentication_status:
                         stframe.image(image,channels = 'BGR',use_column_width=True)
                         msucess = "Felicitaciones, bien hecho"
                         speak(msucess)
+                        finishexercise = True
                         time.sleep(5)          
                         cap.release()
                         cv2.destroyAllWindows()
@@ -2184,8 +2186,66 @@ if authentication_status:
                     placeholder_results_1.markdown(font_size_px("RESULTADOS"), unsafe_allow_html=True)
 
                     #Cargar dataset de resultados
-                    timestamp_show_results = get_timestap_txt()
+                    timestamp_show_results = get_timestap_txt(username,id_exercise)
                     df_results.to_csv(f'03. users/{timestamp_show_results}.csv', index=False)
 
                     placeholder_results_2.table(df_results)
 
+                    if id_exercise == "push_up":
+
+                        aprox_exercise = ds.get_aprox_exercise(["right_elbow_angles_pu", "right_hit_angles_pu", "right_knee_angles_pu"],
+                                                            [desv_right_elbow_angle_in, desv_right_hit_angle_in, desv_right_knee_angle_in], 
+                                                            df_trainers_angles, 
+                                                            df_results)
+
+                    elif id_exercise == "curl_up":
+
+                        aprox_exercise = ds.get_aprox_exercise(["right_shoulder_angles_cu", "right_hit_angles_cu", "right_knee_angles_cu"],
+                                                            [desv_right_shoulder_angle_in, desv_right_hit_angle_in, desv_right_knee_angle_in], 
+                                                            df_trainers_angles, 
+                                                            df_results)
+
+                    elif id_exercise == "front_plank":
+
+                        aprox_exercise = ds.get_aprox_exercise(["right_shoulder_angles_fp", "right_hit_angles_fp", "right_ankle_angles_fp"],
+                                                            [desv_right_shoulder_angle_in, desv_right_hit_angle_in, desv_right_ankle_angle_in], 
+                                                            df_trainers_angles, 
+                                                            df_results)
+
+                    elif id_exercise == "forward_lunge":
+
+                        aprox_exercise = ds.get_aprox_exercise(["right_hit_angles_fl","right_knee_angles_fl", "left_knee_angles_fl"],
+                                                            [desv_right_hit_angle_in, desv_right_knee_angle_in, desv_left_knee_angle_in], 
+                                                            df_trainers_angles, 
+                                                            df_results)
+
+                    elif id_exercise == "bird_dog":
+
+                        aprox_exercise = ds.get_aprox_exercise(["right_shoulder_angles_bd" , "right_hit_angles_bd", "right_knee_angles_bd" , "left_knee_angles_bd", "right_elbow_angles_bd", "left_elbow_angles_bd"],
+                                                            [desv_right_shoulder_angle_in, desv_right_hit_angle_in, desv_right_knee_angle_in,desv_left_knee_angle_in,desv_right_elbow_angle_in, desv_left_elbow_angle_in], 
+                                                            df_trainers_angles, 
+                                                            df_results)
+
+        # Recent training
+        if finishexercise == True:
+            image_message, aprox_indicator = st.columns(2)
+                        
+            with image_message:
+                st.title("Precisión del entrenamiento (%)")
+                image1 = "https://i.pinimg.com/originals/90/16/59/90165916f8fb15f27f15159d1b037409.png"
+                st.image(image1, width = 360)            
+                        
+            with aprox_indicator:
+                st.plotly_chart(ds.plot_aprox_gauge_chart(aprox_exercise, "Aproximación (%)", 0, 100, 50, 80))
+
+            tr_time_indicator, cal_burned_indicator = st.columns(2)
+
+            with tr_time_indicator:
+                training_time = ds.get_training_time(df_results)
+                st.plotly_chart(ds.plot_training_time_card_chart(training_time, "Tiempo entrenamiento (min.)", " min."))
+
+            with cal_burned_indicator:
+                calories_burned = ds.get_calories_burned(training_time, id_exercise)
+                st.plotly_chart(ds.plot_cal_burned_card_chart(calories_burned, "Calorías quemadas (cal.)", " cal."))
+            
+            
