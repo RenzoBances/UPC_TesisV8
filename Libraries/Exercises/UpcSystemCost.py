@@ -77,7 +77,7 @@ def get_cost_pose_user(df_trainer_coords, results_frame, n_pose):
     for i in df_trainer_coords.columns:
         #ct = datetime.datetime.now()
         #print(str(ct) + " Evaluating the position: " + str(n_pose))
-        trainer_array.append(df_trainer_coords[i][n_pose])
+        trainer_array.append(df_trainer_coords[i][n_pose-1])
 
     x = np.array(user_array) 
     y = np.array(trainer_array)
