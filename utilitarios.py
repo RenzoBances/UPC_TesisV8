@@ -40,6 +40,9 @@ def create_df_results():
         'left_knee_angles_bd'       : pd.Series(dtype='float'), #29
         'right_elbow_angles_bd'     : pd.Series(dtype='float'), #30
         'left_elbow_angles_bd'      : pd.Series(dtype='float'), #31
+        'pose_trainer_cost_min'     : pd.Series(dtype='float'), #32
+        'pose_trainer_cost_max'     : pd.Series(dtype='float'), #33
+        'pose_user_cost'            : pd.Series(dtype='float')  #34
         })
     return df_results
 
@@ -81,6 +84,9 @@ def add_row_df_results(df_results,
                        left_knee_angles_bd,     #29
                        right_elbow_angles_bd,   #30
                        left_elbow_angles_bd,    #31
+                       pose_trainer_cost_min,   #32
+                       pose_trainer_cost_max,   #33
+                       pose_user_cost           #34
                        ):
     
     df_results.loc[len(df_results.index)] = [
@@ -120,5 +126,8 @@ def add_row_df_results(df_results,
         left_knee_angles_bd,     #29 - float
         right_elbow_angles_bd,   #30 - float
         left_elbow_angles_bd,    #31 - float
+        pose_trainer_cost_min,   #32 - float
+        pose_trainer_cost_max,   #33 - float
+        pose_user_cost           #34 - float
         ]
     return df_results

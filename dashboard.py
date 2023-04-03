@@ -35,19 +35,34 @@ def get_df_calories_burned_by_date(df_train_time_exercise_by_date):
 
    return df_train_time_exercise_by_date
 
-def get_df_train_time_exercise_by_date(df_whole_training, df_train_time_exercise_by_date):
+def get_df_train_time_exercise_by_date(datasets_list):
 
-   training_time_by_date = []
-
-   for i in range(0, len(df_train_time_exercise_by_date)):
+   df = pd.DataFrame()
+   mins_calculated = []
+   for i in datasets_list:
        
-      df_analisis=df_whole_training[(df_whole_training['id_exercise']==df_train_time_exercise_by_date['id_exercise'][i])&(df_whole_training['Fecha']==df_train_time_exercise_by_date['Fecha'][i])]
-       
-      training_time_by_date.append(get_training_time(df_analisis))
-   
-   df_train_time_exercise_by_date['Training_time'] = training_time_by_date
+      df_temp = pd.read_csv(".//03. users//"+i)
+      df_temp2 = df_temp.copy()
+      df_temp["DateTime_Start"] = pd.to_datetime(df_temp.DateTime_Start)
+      
+      first_time = df_temp['DateTime_Start'].iloc[0].time()
+      last_time = df_temp['DateTime_Start'].iloc[-1].time()
+      time_diff = (datetime.combine(date.today(), last_time) - datetime.combine(date.today(), first_time)).total_seconds()
+      mins_calculated.append(round(time_diff / 60,2))
+      
+      df_temp2['Fecha'] = df_temp2['DateTime_Start'].str.slice(0,10)
+      df_temp2 = df_temp2[['id_exercise', 'Fecha']]
+      df_temp2 = df_temp2.drop_duplicates()
 
-   return df_train_time_exercise_by_date
+      df = pd.concat([df, df_temp2])
+
+   df['Training_time'] = mins_calculated
+   df = df.groupby(['id_exercise', 'Fecha']).sum()
+   df = df.reset_index()
+   #del df['index']
+   df.columns = ['id_exercise', 'Fecha', 'Training_time']
+   #print(df.head())
+   return df
 
 def plot_barchar_by_date(df, x, y, color, text, x_axis, y_axis, title):
 
@@ -188,16 +203,20 @@ def get_training_time(df_data_exercise):
 
 def get_aprox_exercise(cols_angl_exerc_selected, arr_desv_angles, df_prom_angles, df_data_exercise):
 
-   cols_data_excercise = ['count_pose']
+   cols_data_excercise = ['count_pose','id_exercise']
 
    df_data_exercise = df_data_exercise[cols_data_excercise+cols_angl_exerc_selected]
+   df_data_exercise = df_data_exercise.reset_index()
+   
+   del df_data_exercise['index']
 
    prom_aprox_angles =[] # eliminar ef de efectividad ya que ahora se denomina aproximacion
    names_angles_prom_matrix = df_prom_angles['Parte'].unique()
    for i in range(0, len(df_data_exercise)):
-
+      print(df_data_exercise['id_exercise'][i]) 
       count_pose = df_data_exercise['count_pose'][i]
-      # print("Pose: ", count_pose)
+      #count_pose=count_pose[0]
+      print("Pose: ", count_pose)
       angles_user = []
       angles_trainer = []
       min_angles = []
@@ -205,7 +224,8 @@ def get_aprox_exercise(cols_angl_exerc_selected, arr_desv_angles, df_prom_angles
       aproxs_angles = []
 
       for j in range(0, len(cols_angl_exerc_selected)):
-            
+         print("Pose segun loop: ", str(df_prom_angles['pose'][j]))
+         print("Count pose: ", str(count_pose))
          angles_user.append(df_data_exercise[cols_angl_exerc_selected[j]][i])
          angle_trainer = df_prom_angles['Angulo'][(df_prom_angles['pose']==int(count_pose))&(df_prom_angles['Parte']==names_angles_prom_matrix[j])]
          angle_trainer = angle_trainer.iloc[0]

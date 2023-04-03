@@ -135,8 +135,7 @@ def load_reportes():
             tr_time_indicator, cal_burned_indicator = st.columns(2)
 
             with tr_time_indicator:
-                df_train_time_exercise_by_date = ds.get_data_grouped_by_date(df_today_training)
-                df_train_time_exercise_by_date = ds.get_df_train_time_exercise_by_date(df_today_training, df_train_time_exercise_by_date)
+                df_train_time_exercise_by_date = ds.get_df_train_time_exercise_by_date(b_today_training)
                 fig_tr_time = ds.plot_barchar_by_date(df_train_time_exercise_by_date, "Fecha", "Training_time", "id_exercise", "Training_time", "Fecha", "Tiempo de entrenamiento (min)", "Tiempo de entrenamiento de ejercicios realizados por día")
                 st.plotly_chart(fig_tr_time)  
 
@@ -165,8 +164,7 @@ def load_reportes():
             tr_time_indicator1, cal_burned_indicator1 = st.columns(2)
 
             with tr_time_indicator1:
-                df_train_time_exercise_by_date = ds.get_data_grouped_by_date(df_whole_training)
-                df_train_time_exercise_by_date = ds.get_df_train_time_exercise_by_date(df_whole_training, df_train_time_exercise_by_date)
+                df_train_time_exercise_by_date = ds.get_df_train_time_exercise_by_date(c_whole_training)
                 fig_tr_time = ds.plot_barchar_by_date(df_train_time_exercise_by_date, "Fecha", "Training_time", "id_exercise", "Training_time", "Fecha", "Tiempo de entrenamiento (min)", "Tiempo de entrenamiento de ejercicios realizados por día")
                 st.plotly_chart(fig_tr_time)  
 
@@ -206,12 +204,14 @@ def print_sidebar_main(id_exercise):
         st.markdown('---')
         
 def get_trainer_coords(id_exercise, id_trainer):
-        df = pd.read_csv("02. trainers/" + id_exercise + "/costs/" + id_exercise + "_puntos_trainer"+str(id_trainer)+".csv")
-        del df['pose']
-        del df['right_arm_angles']
-        del df['right_torso_angles']
-        del df['right_leg_angles']
-        return df
+    
+    df = pd.read_csv("02. trainers/" + id_exercise + "/costs/" + id_exercise + "_puntos_trainer"+str(id_trainer)+".csv")
+    if id_exercise == "bird_dog":
+        df = df.iloc[: , :-6]
+    else:
+        df = df.iloc[: , :-3]
+    del df['pose']
+    return df
 
 def get_cost_pose_trainer(id_exercise, n_pose):
     if n_pose >= 1:
@@ -539,7 +539,7 @@ if authentication_status:
             #stframe.image("./01. webapp_img/user.png")
 
             #Cris-DM pasar a función - inicio
-            # df_trainer_coords = get_trainer_coords(id_exercise, id_trainer)
+            df_trainer_coords = get_trainer_coords(id_exercise, id_trainer)
             df_trainers_angles = get_trainers_angles(id_exercise)
             #Cris-DM pasar a función - fin
         
@@ -803,45 +803,45 @@ if authentication_status:
                                         ##                💰 SISTEMA COSTOS (INICIO)              ##
                                         ############################################################
 
-                                        # pose_trainer_cost_min, pose_trainer_cost_max = get_cost_pose_trainer(id_exercise, st.session_state.count_pose)
-                                        # pose_user_cost = UpcSystemCost.get_cost_pose_user(df_trainer_coords, results, st.session_state.count_pose)
+                                        pose_trainer_cost_min, pose_trainer_cost_max = get_cost_pose_trainer(id_exercise, st.session_state.count_pose+1)
+                                        pose_user_cost = UpcSystemCost.get_cost_pose_user(df_trainer_coords, results, st.session_state.count_pose+1)
                                         
-                                        # color_validation = (255, 0, 0) #Azul - dentro del rango
-                                        # message_validation = "Correct Position"
+                                        color_validation = (255, 0, 0) #Azul - dentro del rango
+                                        message_validation = "Correct Position"
 
-                                        # if pose_user_cost < pose_trainer_cost_min or pose_user_cost > pose_trainer_cost_min:
-                                        #     color_validation = (0, 0, 255) #Rojo - fuera del rango
-                                        #     message_validation = "Wrong Position"
+                                        if pose_user_cost < pose_trainer_cost_min or pose_user_cost > pose_trainer_cost_min:
+                                            color_validation = (0, 0, 255) #Rojo - fuera del rango
+                                            message_validation = "Wrong Position"
 
                                         # #1. Esquina superior izquierda: Evaluación de costos trainer vs user
-                                        # cv2.rectangle(image, (700,0), (415,50), (245,117,16), -1)
-                                        # cv2.putText(image, 
-                                        #             "Pose: "+ str(st.session_state.count_pose),
-                                        #             (435,20),
-                                        #             cv2.FONT_HERSHEY_DUPLEX,
-                                        #             0.5,
-                                        #             (255,255,255),
-                                        #             1, 
-                                        #             cv2.LINE_AA)
-                                        # cv2.putText(image,
-                                        #             "Range: [" + str(pose_trainer_cost_min) + " - " + str(pose_trainer_cost_max) + "]", #Rango costos
-                                        #             (435,40),
-                                        #             cv2.FONT_HERSHEY_SIMPLEX,
-                                        #             0.5,
-                                        #             (255,255,255),
-                                        #             1, 
-                                        #             cv2.LINE_AA)
+                                        cv2.rectangle(image, (700,0), (415,50), (245,117,16), -1)
+                                        cv2.putText(image, 
+                                                    "Pose: "+ str(st.session_state.count_pose+1),
+                                                    (435,20),
+                                                    cv2.FONT_HERSHEY_DUPLEX,
+                                                    0.5,
+                                                    (255,255,255),
+                                                    1, 
+                                                    cv2.LINE_AA)
+                                        cv2.putText(image,
+                                                    "Range: [" + str(pose_trainer_cost_min) + " - " + str(pose_trainer_cost_max) + "]", #Rango costos
+                                                    (435,40),
+                                                    cv2.FONT_HERSHEY_SIMPLEX,
+                                                    0.5,
+                                                    (255,255,255),
+                                                    1, 
+                                                    cv2.LINE_AA)
 
                                         # #2. Esquina superior derecha: Posición correcta/incorrecta
-                                        # cv2.rectangle(image, (700,70), (415,50), (255,255,255), -1)
-                                        # cv2.putText(image, 
-                                        #             "User cost: " + str(pose_user_cost), #Costo resultante 
-                                        #             (465,65),
-                                        #             cv2.FONT_HERSHEY_SIMPLEX, 
-                                        #             0.5,
-                                        #             color_validation,
-                                        #             1, 
-                                        #             cv2.LINE_AA)
+                                        cv2.rectangle(image, (700,70), (415,50), (255,255,255), -1)
+                                        cv2.putText(image, 
+                                                     "User cost: " + str(pose_user_cost), #Costo resultante 
+                                                     (465,65),
+                                                     cv2.FONT_HERSHEY_SIMPLEX, 
+                                                     0.5,
+                                                     color_validation,
+                                                     1, 
+                                                     cv2.LINE_AA)
 
                                         ############################################################
                                         ##                💰 SISTEMA COSTOS (FIN)                 ##
@@ -899,21 +899,24 @@ if authentication_status:
                                                                                 right_elbow_angle,                  #14 - float - right_elbow_angles_pu
                                                                                 right_hit_angle,                    #15 - float - right_hit_angles_pu
                                                                                 right_knee_angle,                   #16 - float - right_knee_angles_pu
-                                                                                None,    #17 - float - right_shoulder_angles_cu
-                                                                                None,    #18 - float - right_hit_angles_cu
-                                                                                None,    #19 - float - right_knee_angles_cu
-                                                                                None,    #20 - float - right_shoulder_angles_fp
-                                                                                None,    #21 - float - right_hit_angles_fp
-                                                                                None,    #22 - float - right_ankle_angles_fp
-                                                                                None,    #23 - float - right_hit_angles_fl
-                                                                                None,    #24 - float - right_knee_angles_fl
-                                                                                None,    #25 - float - left_knee_angles_fl
-                                                                                None,    #26 - float - right_shoulder_angles_bd
-                                                                                None,    #27 - float - right_hit_angles_bd
-                                                                                None,    #28 - float - right_knee_angles_bd
-                                                                                None,    #29 - float - left_knee_angles_bd
-                                                                                None,    #30 - float - right_elbow_angles_bd
-                                                                                None,    #31 - float - left_elbow_angles_bd
+                                                                                None,                               #17 - float - right_shoulder_angles_cu
+                                                                                None,                               #18 - float - right_hit_angles_cu
+                                                                                None,                               #19 - float - right_knee_angles_cu
+                                                                                None,                               #20 - float - right_shoulder_angles_fp
+                                                                                None,                               #21 - float - right_hit_angles_fp
+                                                                                None,                               #22 - float - right_ankle_angles_fp
+                                                                                None,                               #23 - float - right_hit_angles_fl
+                                                                                None,                               #24 - float - right_knee_angles_fl
+                                                                                None,                               #25 - float - left_knee_angles_fl
+                                                                                None,                               #26 - float - right_shoulder_angles_bd
+                                                                                None,                               #27 - float - right_hit_angles_bd
+                                                                                None,                               #28 - float - right_knee_angles_bd
+                                                                                None,                               #29 - float - left_knee_angles_bd
+                                                                                None,                               #30 - float - right_elbow_angles_bd
+                                                                                None,                               #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ############################################ 
                                                 print(f'right_elbow_angle: {right_elbow_angle}')
@@ -967,6 +970,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ############################################ 
                                                 print(f'right_elbow_angle: {right_elbow_angle}')
@@ -1024,6 +1030,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ######################################s######
                                                 st.session_state.count_rep += 1
@@ -1093,6 +1102,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ############################################ 
                                                 print(f'right_shoulder_angle: {right_shoulder_angle}')
@@ -1143,6 +1155,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ############################################ 
                                                 print(f'right_shoulder_angle: {right_shoulder_angle}')
@@ -1199,6 +1214,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 #####################################s######
                                                 st.session_state.count_rep += 1
@@ -1269,6 +1287,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ############################################ 
                                                 print(f'right_shoulder_angle: {right_shoulder_angle}')
@@ -1337,6 +1358,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ######################################s######
                                                 st.session_state.count_rep += 1                                                
@@ -1406,6 +1430,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ########################################### 
                                                 print(f'right_hit_angle: {right_hit_angle}')
@@ -1455,6 +1482,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ########################################### 
                                                 print(f'right_hit_angle: {right_hit_angle}')
@@ -1509,6 +1539,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 #####################################s######
                                             elif up == False and\
@@ -1556,6 +1589,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ########################################### 
                                                 print(f'right_hit_angle: {right_hit_angle}')
@@ -1613,6 +1649,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 #####################################s######
                                                 st.session_state.count_rep += 1
@@ -1695,6 +1734,9 @@ if authentication_status:
                                                                                 left_knee_angle,                    #29 - float - left_knee_angles_bd
                                                                                 right_elbow_angle,                  #30 - float - right_elbow_angles_bd
                                                                                 left_elbow_angle,                   #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ############################################ 
                                                 print(f'right_hit_angle: {right_hit_angle}')
@@ -1745,6 +1787,9 @@ if authentication_status:
                                                                                 left_knee_angle,                    #29 - float - left_knee_angles_bd
                                                                                 right_elbow_angle,                  #30 - float - right_elbow_angles_bd
                                                                                 left_elbow_angle,                   #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ############################################ 
                                                 print(f'left_knee_angle: {left_knee_angle}')
@@ -1800,6 +1845,9 @@ if authentication_status:
                                                                                 left_knee_angle,                    #29 - float - left_knee_angles_bd
                                                                                 right_elbow_angle,                  #30 - float - right_elbow_angles_bd
                                                                                 left_elbow_angle,                   #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ######################################s######
                                             elif up == False and\
@@ -1846,6 +1894,9 @@ if authentication_status:
                                                                                 left_knee_angle,                    #29 - float - left_knee_angles_bd
                                                                                 right_elbow_angle,                  #30 - float - right_elbow_angles_bd
                                                                                 left_elbow_angle,                   #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ############################################ 
                                                 print(f'right_knee_angle: {right_knee_angle}')
@@ -1904,6 +1955,9 @@ if authentication_status:
                                                                                 left_knee_angle,                    #29 - float - left_knee_angles_bd
                                                                                 right_elbow_angle,                  #30 - float - right_elbow_angles_bd
                                                                                 left_elbow_angle,                   #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ######################################s######
                                                 st.session_state.count_rep += 1
@@ -2070,6 +2124,9 @@ if authentication_status:
                                                                                 None,    #29 - float - left_knee_angles_bd
                                                                                 None,    #30 - float - right_elbow_angles_bd
                                                                                 None,    #31 - float - left_elbow_angles_bd
+                                                                                pose_trainer_cost_min,              #32 - float - pose_trainer_cost_min
+                                                                                pose_trainer_cost_max,              #33 - float - pose_trainer_cost_max
+                                                                                pose_user_cost                      #34 - float - pose_user_cost
                                                 )
                                                 ######################################s######
                                                 cv2.putText(image, '' , (155,350), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,0,0), 3, cv2.LINE_AA)
