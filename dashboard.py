@@ -201,7 +201,7 @@ def get_training_time(df_data_exercise):
 
    return minutes_diff;
 
-def get_aprox_exercise(cols_angl_exerc_selected, arr_desv_angles, df_prom_angles, df_data_exercise):
+def get_aprox_exercise(cols_angl_exerc_selected, df_prom_angles, df_data_exercise):
 
    cols_data_excercise = ['count_pose','id_exercise']
 
@@ -217,30 +217,41 @@ def get_aprox_exercise(cols_angl_exerc_selected, arr_desv_angles, df_prom_angles
       count_pose = df_data_exercise['count_pose'][i]
       #count_pose=count_pose[0]
       print("Pose: ", count_pose)
-      angles_user = []
-      angles_trainer = []
-      min_angles = []
-      max_angles = []
+      #angles_user = []
+      #angles_trainer = []
+      #min_angles = []
+      #max_angles = []
       aproxs_angles = []
 
       for j in range(0, len(cols_angl_exerc_selected)):
          print("Pose segun loop: ", str(df_prom_angles['pose'][j]))
          print("Count pose: ", str(count_pose))
-         angles_user.append(df_data_exercise[cols_angl_exerc_selected[j]][i])
+         angle_user=df_data_exercise[cols_angl_exerc_selected[j]][i]
          angle_trainer = df_prom_angles['Angulo'][(df_prom_angles['pose']==int(count_pose))&(df_prom_angles['Parte']==names_angles_prom_matrix[j])]
          angle_trainer = angle_trainer.iloc[0]
+         desv_angle_trainer = df_prom_angles['Desviacion_estandar_f'][(df_prom_angles['pose']==int(count_pose))&(df_prom_angles['Parte']==names_angles_prom_matrix[j])]
+         desv_angle_trainer = desv_angle_trainer.iloc[0]
             
-         angles_trainer.append(angle_trainer)
+         #angles_trainer.append(angle_trainer)
 
-         min_angles.append(angles_trainer[j] - arr_desv_angles[j])
-         max_angles.append(angles_trainer[j] + arr_desv_angles[j])
+         min_angle = angle_trainer - desv_angle_trainer
+         max_angle = angle_trainer + desv_angle_trainer
       
-         if angles_user[j] <= angles_trainer[j]:
+         if angle_user <= angle_trainer:
 
-            aproxs_angles.append(round(100*abs(((angles_user[j]-min_angles[j])/(angles_trainer[j]-min_angles[j]))),2))
+            aproxs_angles.append(round(100*abs(((angle_user-min_angle)/(angle_trainer-min_angle))),2))
          else:
 
-            aproxs_angles.append(round(100*(1-((angles_user[j]-angles_trainer[j])/(max_angles[j]-angles_trainer[j]))),2))
+            aproxs_angles.append(round(100*(1-((angle_user-angle_trainer)/(max_angle-angle_trainer))),2))
 
       prom_aprox_angles.append(round(np.mean(aproxs_angles),1))
    return round(np.mean(prom_aprox_angles),1)
+
+def plot_scatter_user_costs(df_recent_trainig):
+
+   st.markdown("<h1 style='text-align: center; font-size: 20px;'>Análisis de tendencia de costos</h1>", unsafe_allow_html=True)
+   fig = px.scatter(df_recent_trainig, x="pose_trainer_cost_min", y="pose_trainer_cost_max", color="pose_user_cost")
+   #fig.layout.width = 400
+   #fig.layout.height = 350
+
+   return fig;

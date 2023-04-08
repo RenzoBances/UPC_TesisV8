@@ -23,28 +23,6 @@ import utilitarios as ut
 import Libraries.Exercises.UpcSystemCost as UpcSystemCost
 
 #1.3. GLOBAL VARIABLES
-desv_right_elbow_angle_in_pu = 10#get_desv_angle(df_trainers_angles, start, 'right_shoulder_angles')
-desv_right_hit_angle_in_pu=10#get_desv_angle(df_trainers_angles, start, 'right_hit_angles')
-desv_right_knee_angle_in_pu=10#get_desv_angle(df_trainers_angles, start, 'right_knee_angles')
-
-desv_right_shoulder_angle_in_bd=25#get_desv_angle(df_trainers_angles, start, 'left_knee_angles')
-desv_right_hit_angle_in_bd=25#get_desv_angle(df_trainers_angles, start, 'right_elbow_angles')
-desv_right_knee_angle_in_bd=25#get_desv_angle(df_trainers_angles, start, 'left_elbow_angles')
-desv_left_knee_angle_in_bd=25
-desv_right_elbow_angle_in_bd=25
-desv_left_elbow_angle_in_bd = 25
-
-desv_right_hit_angle_in_fl=25
-desv_right_knee_angle_in_fl=25 
-desv_left_knee_angle_in_fl=25
-
-desv_right_shoulder_angle_in_fp=15 
-desv_right_hit_angle_in_fp=15
-desv_right_ankle_angle_in_fp=15
-
-desv_right_shoulder_angle_in_cu=15
-desv_right_hit_angle_in_cu=15
-desv_right_knee_angle_in_cu=15 
 
 # 2. FUNCTIONS
 ##############
@@ -218,7 +196,7 @@ def get_cost_pose_trainer(id_exercise, n_pose):
         df = pd.read_csv("02. trainers/" + id_exercise + "/costs/costos_" + id_exercise + "_promedio.csv")
 
         cost_align = df.loc[df['Pose'] == n_pose,"Costo_alineamiento"].reset_index(drop = True)[0]
-        ds = df.loc[df['Pose'] == n_pose,"Desviacion_estandar"].reset_index(drop = True)[0]
+        ds = df.loc[df['Pose'] == n_pose,"Desviacion_estandar_f"].reset_index(drop = True)[0]
         
         pose_trainer_cost_min = round(cost_align - ds, 2)
         pose_trainer_cost_max = round(cost_align + ds, 2)
@@ -251,7 +229,7 @@ def get_angle(df, index, part):
     return angle_in
 
 def get_desv_angle(df, index, part):
-    desv_in=df['Desviacion_estandar'][(df.pose==index+1)&(df.Parte==part)]
+    desv_in=df['Desviacion_estandar_f'][(df.pose==index+1)&(df.Parte==part)]
     desv_in=desv_in.iloc[0]
     return desv_in
 
@@ -294,36 +272,31 @@ def get_df_aprox_exercise_by_date(df_whole_training, df_aprox_exercise_by_date):
        
       if df_aprox_exercise_by_date['id_exercise'][i] == 'push_up':
        
-         aproxs_by_date.append(ds.get_aprox_exercise(["right_elbow_angles_pu", "right_hit_angles_pu", "right_knee_angles_pu"],
-                                                            [desv_right_elbow_angle_in_pu, desv_right_hit_angle_in_pu, desv_right_knee_angle_in_pu], 
+         aproxs_by_date.append(ds.get_aprox_exercise(["right_elbow_angles_pu", "right_hit_angles_pu", "right_knee_angles_pu"], 
                                                             get_trainers_angles("push_up"), 
                                                             df_analisis))
            
       elif df_aprox_exercise_by_date['id_exercise'][i] == 'bird_dog':
 
          aproxs_by_date.append(ds.get_aprox_exercise(["right_shoulder_angles_bd" , "right_hit_angles_bd", "right_knee_angles_bd" , "left_knee_angles_bd", "right_elbow_angles_bd", "left_elbow_angles_bd"],
-                                                            [desv_right_shoulder_angle_in_bd, desv_right_hit_angle_in_bd, desv_right_knee_angle_in_bd,desv_left_knee_angle_in_bd,desv_right_elbow_angle_in_bd, desv_left_elbow_angle_in_bd], 
                                                             get_trainers_angles('bird_dog'), 
                                                             df_analisis))
 
       elif df_aprox_exercise_by_date['id_exercise'][i] == 'forward_lunge':
 
          aproxs_by_date.append(ds.get_aprox_exercise(["right_hit_angles_fl","right_knee_angles_fl", "left_knee_angles_fl"],
-                                                            [desv_right_hit_angle_in_fl, desv_right_knee_angle_in_fl, desv_left_knee_angle_in_fl], 
                                                             get_trainers_angles("forward_lunge"), 
                                                             df_analisis))
 
       elif df_aprox_exercise_by_date['id_exercise'][i] == 'front_plank':
 
          aproxs_by_date.append(ds.get_aprox_exercise(["right_shoulder_angles_fp", "right_hit_angles_fp", "right_ankle_angles_fp"],
-                                                            [desv_right_shoulder_angle_in_fp, desv_right_hit_angle_in_fp, desv_right_ankle_angle_in_fp], 
                                                             get_trainers_angles("front_plank"), 
                                                             df_analisis))
 
       elif df_aprox_exercise_by_date['id_exercise'][i] == 'curl_up':
 
          aproxs_by_date.append(ds.get_aprox_exercise(["right_shoulder_angles_cu", "right_hit_angles_cu", "right_knee_angles_cu"],
-                                                            [desv_right_shoulder_angle_in_cu, desv_right_hit_angle_in_cu, desv_right_knee_angle_in_cu], 
                                                             get_trainers_angles("curl_up"), 
                                                             df_analisis))
 
@@ -862,11 +835,11 @@ if authentication_status:
                                             print(f'right_hit_angle_in: {right_hit_angle_in}')
                                             right_knee_angle_in=get_angle(df_trainers_angles, start, 'right_knee_angles')
                                             print(f'right_knee_angle_in: {right_knee_angle_in}')
-                                            desv_right_elbow_angle_in=10 #get_desv_angle(df_trainers_angles, start, 'right_elbow_angles')
+                                            desv_right_elbow_angle_in=get_desv_angle(df_trainers_angles, start, 'right_elbow_angles')#10
                                             print(f'desv_right_elbow_angle: {desv_right_elbow_angle_in}')
-                                            desv_right_hit_angle_in=10 #get_desv_angle(df_trainers_angles, start, 'right_hit_angles')
+                                            desv_right_hit_angle_in=get_desv_angle(df_trainers_angles, start, 'right_hit_angles')#10
                                             print(f'desv_right_hit_angle: {desv_right_hit_angle_in}')
-                                            desv_right_knee_angle_in=10 #get_desv_angle(df_trainers_angles, start, 'right_knee_angles')
+                                            desv_right_knee_angle_in=get_desv_angle(df_trainers_angles, start, 'right_knee_angles')#10
                                             print(f'desv_right_knee_angle: {desv_right_knee_angle_in}')
 
                                             #SUMAR Y RESTAR UN RANGO DE 10 PARA EL ANGULO DE CADA POSE PARA UTILIZARLO COMO RANGO 
@@ -1050,11 +1023,11 @@ if authentication_status:
                                             print(f'right_hit_angle_in: {right_hit_angle_in}')
                                             right_knee_angle_in=get_angle(df_trainers_angles, start, 'right_knee_angles')
                                             print(f'right_knee_angle_in: {right_knee_angle_in}')
-                                            desv_right_shoulder_angle_in=15#get_desv_angle(df_trainers_angles, start, 'right_elbow_angles')
+                                            desv_right_shoulder_angle_in=get_desv_angle(df_trainers_angles, start, 'right_shoulder_angles')#15
                                             print(f'desv_right_shoulder_angle_in: {desv_right_shoulder_angle_in}')
-                                            desv_right_hit_angle_in=15#get_desv_angle(df_trainers_angles, start, 'right_hit_angles')
+                                            desv_right_hit_angle_in=get_desv_angle(df_trainers_angles, start, 'right_hit_angles')#15
                                             print(f'desv_right_hit_angle: {desv_right_hit_angle_in}')
-                                            desv_right_knee_angle_in=15#get_desv_angle(df_trainers_angles, start, 'right_knee_angles')
+                                            desv_right_knee_angle_in=get_desv_angle(df_trainers_angles, start, 'right_knee_angles')#15
                                             print(f'desv_right_knee_angle: {desv_right_knee_angle_in}')
 
                                             #SUMAR Y RESTAR UN RANGO DE 30 PARA EL ANGULO DE CADA POSE PARA UTILIZARLO COMO RANGO 
@@ -1235,11 +1208,11 @@ if authentication_status:
                                             print(f'right_hit_angle_in: {right_hit_angle_in}')
                                             right_ankle_angle_in=get_angle(df_trainers_angles, start, 'right_ankle_angles')
                                             print(f'right_ankle_angle_in: {right_ankle_angle_in}')
-                                            desv_right_shoulder_angle_in=15#get_desv_angle(df_trainers_angles, start, 'right_elbow_angles')
+                                            desv_right_shoulder_angle_in=get_desv_angle(df_trainers_angles, start, 'right_shoulder_angles')#15
                                             print(f'desv_right_shoulder_angle_in: {desv_right_shoulder_angle_in}')
-                                            desv_right_hit_angle_in=15#get_desv_angle(df_trainers_angles, start, 'right_hit_angles')
+                                            desv_right_hit_angle_in=get_desv_angle(df_trainers_angles, start, 'right_hit_angles')#15
                                             print(f'desv_right_hit_angle: {desv_right_hit_angle_in}')
-                                            desv_right_ankle_angle_in=15#get_desv_angle(df_trainers_angles, start, 'right_knee_angles')
+                                            desv_right_ankle_angle_in=get_desv_angle(df_trainers_angles, start, 'right_ankle_angles')#15
                                             print(f'desv_right_ankle_angle_in: {desv_right_ankle_angle_in}')
 
                                             #SUMAR Y RESTAR UN RANGO DE 30 PARA EL ANGULO DE CADA POSE PARA UTILIZARLO COMO RANGO 
@@ -1379,11 +1352,11 @@ if authentication_status:
                                             print(f'right_knee_angle_in: {right_knee_angle_in}')
                                             left_knee_angle_in=get_angle(df_trainers_angles, start, 'left_knee_angles')
                                             print(f'left_knee_angle_in: {left_knee_angle_in}')
-                                            desv_right_hit_angle_in=25#get_desv_angle(df_trainers_angles, start, 'right_elbow_angles')
+                                            desv_right_hit_angle_in=get_desv_angle(df_trainers_angles, start, 'right_hit_angles')#25
                                             print(f'desv_right_hit_angle_in: {desv_right_hit_angle_in}')
-                                            desv_right_knee_angle_in=25#get_desv_angle(df_trainers_angles, start, 'right_hit_angles')
+                                            desv_right_knee_angle_in=get_desv_angle(df_trainers_angles, start, 'right_knee_angles')#25
                                             print(f'desv_right_knee_angle_in: {desv_right_knee_angle_in}')
-                                            desv_left_knee_angle_in=25#get_desv_angle(df_trainers_angles, start, 'right_knee_angles')
+                                            desv_left_knee_angle_in=get_desv_angle(df_trainers_angles, start, 'left_knee_angles')#25
                                             print(f'desv_left_knee_angle_in: {desv_left_knee_angle_in}')
 
                                             # SUMAR Y RESTAR UN RANGO DE 30 PARA EL ANGULO DE CADA POSE PARA UTILIZARLO COMO RANGO 
@@ -1676,17 +1649,17 @@ if authentication_status:
                                             left_elbow_angle_in=get_angle(df_trainers_angles, start, 'left_elbow_angles')
                                             print(f'left_elbow_angle_in: {left_elbow_angle_in}')
                                             
-                                            desv_right_shoulder_angle_in=25#get_desv_angle(df_trainers_angles, start, 'right_shoulder_angles')
+                                            desv_right_shoulder_angle_in=get_desv_angle(df_trainers_angles, start, 'right_shoulder_angles')#25
                                             print(f'desv_right_shoulder_angle_in: {desv_right_shoulder_angle_in}')
-                                            desv_right_hit_angle_in=25#get_desv_angle(df_trainers_angles, start, 'right_hit_angles')
+                                            desv_right_hit_angle_in=get_desv_angle(df_trainers_angles, start, 'right_hit_angles')#25
                                             print(f'desv_right_hit_angle_in: {desv_right_hit_angle_in}')
-                                            desv_right_knee_angle_in=25#get_desv_angle(df_trainers_angles, start, 'right_knee_angles')
+                                            desv_right_knee_angle_in=get_desv_angle(df_trainers_angles, start, 'right_knee_angles')#25
                                             print(f'desv_right_knee_angle_in: {desv_right_knee_angle_in}')
-                                            desv_left_knee_angle_in=25#get_desv_angle(df_trainers_angles, start, 'left_knee_angles')
+                                            desv_left_knee_angle_in=get_desv_angle(df_trainers_angles, start, 'left_knee_angles')#25
                                             print(f'desv_left_knee_angle_in: {desv_left_knee_angle_in}')
-                                            desv_right_elbow_angle_in=25#get_desv_angle(df_trainers_angles, start, 'right_elbow_angles')
+                                            desv_right_elbow_angle_in=get_desv_angle(df_trainers_angles, start, 'right_elbow_angles')#25
                                             print(f'desv_right_elbow_angle_in: {desv_right_elbow_angle_in}')
-                                            desv_left_elbow_angle_in=25#get_desv_angle(df_trainers_angles, start, 'left_elbow_angles')
+                                            desv_left_elbow_angle_in=get_desv_angle(df_trainers_angles, start, 'left_elbow_angles')#25
                                             print(f'desv_left_elbow_angle_in: {desv_left_elbow_angle_in}')
 
                                             #SUMAR Y RESTAR UN RANGO DE 30 PARA EL ANGULO DE CADA POSE PARA UTILIZARLO COMO RANGO 
@@ -2250,36 +2223,31 @@ if authentication_status:
 
                     if id_exercise == "push_up":
 
-                        aprox_exercise = ds.get_aprox_exercise(["right_elbow_angles_pu", "right_hit_angles_pu", "right_knee_angles_pu"],
-                                                            [desv_right_elbow_angle_in, desv_right_hit_angle_in, desv_right_knee_angle_in], 
+                        aprox_exercise = ds.get_aprox_exercise(["right_elbow_angles_pu", "right_hit_angles_pu", "right_knee_angles_pu"], 
                                                             df_trainers_angles, 
                                                             df_results)
 
                     elif id_exercise == "curl_up":
 
-                        aprox_exercise = ds.get_aprox_exercise(["right_shoulder_angles_cu", "right_hit_angles_cu", "right_knee_angles_cu"],
-                                                            [desv_right_shoulder_angle_in, desv_right_hit_angle_in, desv_right_knee_angle_in], 
+                        aprox_exercise = ds.get_aprox_exercise(["right_shoulder_angles_cu", "right_hit_angles_cu", "right_knee_angles_cu"], 
                                                             df_trainers_angles, 
                                                             df_results)
 
                     elif id_exercise == "front_plank":
 
                         aprox_exercise = ds.get_aprox_exercise(["right_shoulder_angles_fp", "right_hit_angles_fp", "right_ankle_angles_fp"],
-                                                            [desv_right_shoulder_angle_in, desv_right_hit_angle_in, desv_right_ankle_angle_in], 
                                                             df_trainers_angles, 
                                                             df_results)
 
                     elif id_exercise == "forward_lunge":
 
                         aprox_exercise = ds.get_aprox_exercise(["right_hit_angles_fl","right_knee_angles_fl", "left_knee_angles_fl"],
-                                                            [desv_right_hit_angle_in, desv_right_knee_angle_in, desv_left_knee_angle_in], 
                                                             df_trainers_angles, 
                                                             df_results)
 
                     elif id_exercise == "bird_dog":
 
                         aprox_exercise = ds.get_aprox_exercise(["right_shoulder_angles_bd" , "right_hit_angles_bd", "right_knee_angles_bd" , "left_knee_angles_bd", "right_elbow_angles_bd", "left_elbow_angles_bd"],
-                                                            [desv_right_shoulder_angle_in, desv_right_hit_angle_in, desv_right_knee_angle_in,desv_left_knee_angle_in,desv_right_elbow_angle_in, desv_left_elbow_angle_in], 
                                                             df_trainers_angles, 
                                                             df_results)
 
@@ -2304,5 +2272,8 @@ if authentication_status:
             with cal_burned_indicator:
                 calories_burned = ds.get_calories_burned(training_time, id_exercise)
                 st.plotly_chart(ds.plot_cal_burned_card_chart(calories_burned, "Calorías quemadas (cal.)", " cal."))
+
+            fig_scatter_user_costs = ds.plot_scatter_user_costs(df_results)
+            st.plotly_chart(fig_scatter_user_costs)
             
             
